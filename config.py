@@ -5,7 +5,7 @@ import math
 class Config():
     def __init__(self) -> None:
         # Main active settings
-        self.batch_size = 8                                     # Multi-GPU+BF16 training for 76GB / 62GB, without/with compile, on each A100.
+        self.batch_size = 2                                     # Multi-GPU+BF16 training for 76GB / 62GB, without/with compile, on each A100.
         self.compile = True                                     # 1. PyTorch<=2.0.1 has an inherent CPU memory leak problem; 2.0.1<PyTorch<2.5.0 cannot successfully compile.
         self.mixed_precision = ['no', 'fp16', 'bf16', 'fp8'][2] # 2. FP8 doesn't show acceleration in the torch.compile mode.
         self.SDPA_enabled = True                                # H200x1 + compile==True.  None: 43GB + 14s, math: 43GB + 15s, mem_eff: 35GB + 15s.
@@ -13,11 +13,12 @@ class Config():
 
         # PATH settings
         # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
-        self.sys_home_dir = [os.path.expanduser('~'), '/workspace'][1]   # Default, custom
+        # self.sys_home_dir = [os.path.expanduser('~'), '/workspace'][1]   # Default, custom
+        self.sys_home_dir = os.getcwd()
         self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
 
         # TASK settings
-        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'General-2K', 'Matting'][0]
+        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'General-2K', 'Matting', 'g2t'][6]
         self.testsets = {
             # Benchmarks
             'DIS5K': ','.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4'][:1]),
@@ -27,6 +28,7 @@ class Config():
             'General': ','.join(['DIS-VD', 'TE-P3M-500-NP']),
             'General-2K': ','.join(['DIS-VD', 'TE-P3M-500-NP']),
             'Matting': ','.join(['TE-P3M-500-NP', 'TE-AM-2k']),
+            'g2t': 'MyData'
         }[self.task]
         datasets_all = '+'.join([ds for ds in (os.listdir(os.path.join(self.data_root_dir, self.task)) if os.path.isdir(os.path.join(self.data_root_dir, self.task)) else []) if ds not in self.testsets.split(',')])
         self.training_set = {
@@ -36,6 +38,7 @@ class Config():
             'General': datasets_all,
             'General-2K': datasets_all,
             'Matting': datasets_all,
+            'g2t': 'MyData'
         }[self.task]
 
         # Data settings
@@ -71,9 +74,10 @@ class Config():
                 'General': -20,
                 'General-2K': -20,
                 'Matting': -10,
+                'g2t': -100,
             }[self.task]
         ][1]    # choose 0 to skip
-        self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
+        self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / (4 * 10))     # DIS needs high lr to converge faster. Adapt the lr linearly
         self.num_workers = max(4, self.batch_size)          # will be decreased to min(it, batch_size) at the initialization of the data_loader
 
         # Backbone settings
@@ -120,7 +124,7 @@ class Config():
         self.lr_decay_epochs = [1e5]    # Set to negative N to decay the lr in the last N-th epoch.
         self.lr_decay_rate = 0.5
         # Loss
-        if self.task in ['Matting']:
+        if self.task in ['Matting', 'g2t']:
             self.lambdas_pix_last = {
                 'bce': 30 * 1,
                 'iou': 0.5 * 0,

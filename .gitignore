@@ -150,3 +150,19 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+.ckpts/
+datasets/dis/g2t/MyData/gt/
+datasets/dis/g2t/MyData/im/
+.weights/
+.images_todo/
+.predictions/
+.comparisons/
+.preds/
+.evaluation/eval-*
+.nohup.*
+.tmp*
+.core-*-python-*
+.DS_Store
+.

@@ -17,6 +17,7 @@ from utils import Logger, AverageMeter, set_seed, check_state_dict
 from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
+from torch.utils.tensorboard import SummaryWriter
 
 
 parser = argparse.ArgumentParser(description='')
@@ -165,6 +166,8 @@ class Trainer:
         # Others
         self.loss_log = AverageMeter()
 
+        self.writer = SummaryWriter(log_dir=os.path.join(args.ckpt_dir, 'tensorboard'))
+
     def _train_batch(self, batch):
         if args.use_accelerate:
             inputs = batch[0]#.to(device)
@@ -224,6 +227,17 @@ class Trainer:
         for batch_idx, batch in enumerate(self.train_loader):
             # with nullcontext if not args.use_accelerate or accelerator.gradient_accumulation_steps <= 1 else accelerator.accumulate(self.model):
             self._train_batch(batch)
+
+            global_step = (epoch - 1) * len(self.train_loader) + batch_idx
+
+            for loss_name, loss_value in self.loss_dict.items():
+                if isinstance(loss_value, torch.Tensor):
+                    loss_value = loss_value.item()
+                self.writer.add_scalar(f'train/{loss_name}', loss_value, global_step)
+
+            current_lr = self.optimizer.param_groups[0]['lr']
+            self.writer.add_scalar(f'train/lr', current_lr, global_step)
+
             # Logger
             if (epoch < 2 and batch_idx < 100 and batch_idx % 20 == 0) or batch_idx % max(100, len(self.train_loader) / 100 // 100 * 100) == 0:
                 info_progress = f'Epoch[{epoch}/{args.epochs}] Iter[{batch_idx}/{len(self.train_loader)}].'
@@ -232,6 +246,7 @@ class Trainer:
                     info_loss += f' {loss_name}: {loss_value:.5g} |'
                 logger.info(' '.join((info_progress, info_loss)))
         info_loss = f'@==Final== Epoch[{epoch}/{args.epochs}]  Training Loss: {self.loss_log.avg:.5g}  '
+        self.writer.add_scalar(f'train/loss', self.loss_log.avg, global_step)
         logger.info(info_loss)
 
         self.lr_scheduler.step()
