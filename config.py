@@ -74,7 +74,7 @@ class Config():
                 'General': -20,
                 'General-2K': -20,
                 'Matting': -10,
-                'g2t': -100,
+                'g2t': -60,
             }[self.task]
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / (4 * 10))     # DIS needs high lr to converge faster. Adapt the lr linearly
@@ -124,7 +124,20 @@ class Config():
         self.lr_decay_epochs = [1e5]    # Set to negative N to decay the lr in the last N-th epoch.
         self.lr_decay_rate = 0.5
         # Loss
-        if self.task in ['Matting', 'g2t']:
+        if self.task in ['g2t']:
+            self.lambdas_pix_last = {
+                'bce': 30 * 1,
+                'iou': 0.5 * 1,
+                'iou_patch': 0.5 * 0,
+                'mae': 100 * 1,
+                'mse': 30 * 0,
+                'triplet': 3 * 0,
+                'reg': 100 * 0,
+                'ssim': 10 * 1,
+                'cnt': 5 * 0,
+                'structure': 5 * 0,
+            }
+        if self.task in ['Matting']:
             self.lambdas_pix_last = {
                 'bce': 30 * 1,
                 'iou': 0.5 * 0,
