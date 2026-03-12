@@ -74,10 +74,10 @@ class Config():
                 'General': -20,
                 'General-2K': -20,
                 'Matting': -10,
-                'g2t': -60,
+                'g2t': -401,
             }[self.task]
         ][1]    # choose 0 to skip
-        self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / (4 * 10))     # DIS needs high lr to converge faster. Adapt the lr linearly
+        self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
         self.num_workers = max(4, self.batch_size)          # will be decreased to min(it, batch_size) at the initialization of the data_loader
 
         # Backbone settings
@@ -127,7 +127,7 @@ class Config():
         if self.task in ['g2t']:
             self.lambdas_pix_last = {
                 'bce': 30 * 1,
-                'iou': 0.5 * 1,
+                'iou': 0.5 * 0,
                 'iou_patch': 0.5 * 0,
                 'mae': 100 * 1,
                 'mse': 30 * 0,
@@ -137,7 +137,7 @@ class Config():
                 'cnt': 5 * 0,
                 'structure': 5 * 0,
             }
-        if self.task in ['Matting']:
+        elif self.task in ['Matting']:
             self.lambdas_pix_last = {
                 'bce': 30 * 1,
                 'iou': 0.5 * 0,

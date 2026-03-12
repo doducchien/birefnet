@@ -218,6 +218,7 @@ class Trainer:
                 self.pix_loss.lambdas_pix_last['mae'] *= 1
                 self.pix_loss.lambdas_pix_last['mse'] *= 0.9
                 self.pix_loss.lambdas_pix_last['ssim'] *= 0.9
+
             else:
                 self.pix_loss.lambdas_pix_last['bce'] *= 0
                 self.pix_loss.lambdas_pix_last['ssim'] *= 1
