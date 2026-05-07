@@ -127,7 +127,7 @@ class Config():
         if self.task in ['g2t']:
             self.lambdas_pix_last = {
                 'bce': 30 * 1,
-                'iou': 0.5 * 0,
+                'iou': 0.5 * 1,
                 'iou_patch': 0.5 * 0,
                 'mae': 100 * 1,
                 'mse': 30 * 0,

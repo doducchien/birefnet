@@ -10,7 +10,7 @@ case "${task}" in
     'General') epochs=200 && val_last=50 && step=5 ;;
     'General-2K') epochs=250 && val_last=30 && step=2 ;;
     'Matting') epochs=150 && val_last=50 && step=5 ;;
-    'g2t') epochs=1000 && val_last=70 && step=5 ;;
+    'g2t') epochs=200 && val_last=20 && step=2 ;;
 esac
 
 # Train
@@ -22,7 +22,7 @@ to_be_distributed="False"
 nproc_per_node=0 
 
 echo Training started at $(date)
-resume_weights_path= "./ckpts/my_finetune_v1/epoch_600.pth"
+resume_weights_path="./ckpts/my_finetune_v1/epoch_100.pth"
 if [ ${to_be_distributed} == "True" ]
 then
     # Adapt the nproc_per_node by the number of GPUs. Give 8989 as the default value of master_port.
