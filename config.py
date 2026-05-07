@@ -74,7 +74,7 @@ class Config():
                 'General': -20,
                 'General-2K': -20,
                 'Matting': -10,
-                'g2t': -401,
+                'g2t': -20,
             }[self.task]
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
