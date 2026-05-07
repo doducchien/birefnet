@@ -152,9 +152,9 @@ dmypy.json
 .pyre/
 
 
-.ckpts/
-datasets/dis/g2t/MyData/gt/
-datasets/dis/g2t/MyData/im/
+.ckpts/*
+datasets/dis/g2t/MyData/gt/*
+datasets/dis/g2t/MyData/im/*
 .weights/
 .images_todo/
 .predictions/
